@@ -1,10 +1,30 @@
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx    = null;
 let chompToggle = false;
+let musicGain   = null; // master gain for all music layers
 
 function getAudio() {
   if (!audioCtx) audioCtx = new AudioCtx();
   return audioCtx;
+}
+
+// Routes all music oscillators through a shared gain node so we can
+// duck the music volume on pause without touching SFX.
+function getMusicGain() {
+  const ac = getAudio();
+  if (!musicGain) {
+    musicGain = ac.createGain();
+    musicGain.gain.setValueAtTime(1.0, ac.currentTime);
+    musicGain.connect(ac.destination);
+  }
+  return musicGain;
+}
+
+export function setMusicVolume(vol) {
+  const ac = getAudio();
+  const mg = getMusicGain();
+  mg.gain.cancelScheduledValues(ac.currentTime);
+  mg.gain.setTargetAtTime(vol, ac.currentTime, 0.08); // ~0.25s smooth transition
 }
 
 function playTone(freq, type, duration, gainVal, startTime, endFreq) {
@@ -212,7 +232,7 @@ function schedOsc(freq, type, time, dur, vol) {
   const ac   = getAudio();
   const osc  = ac.createOscillator();
   const gain = ac.createGain();
-  osc.connect(gain); gain.connect(ac.destination);
+  osc.connect(gain); gain.connect(getMusicGain()); // routed through music master gain
   osc.type = type;
   osc.frequency.setValueAtTime(freq, time);
   gain.gain.setValueAtTime(vol, time);
@@ -285,6 +305,7 @@ function runScheduler() {
 
 export function startMusic() {
   if (musicPlaying) return;
+  setMusicVolume(1.0); // restore in case game was paused before
   musicPlaying   = true;
   musicMode      = 'normal';
   melodyIndex    = 0;

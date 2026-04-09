@@ -1,6 +1,6 @@
 import { CELL, W, H, C, canvas, ctx } from './constants.js';
 import { state } from './state.js';
-import { playIntroJingle, playGhostEaten, playDeath, playVictoryDance, resetAudio, startMusic, stopMusic } from './audio.js';
+import { playIntroJingle, playGhostEaten, playDeath, playVictoryDance, resetAudio, startMusic, stopMusic, setMusicVolume } from './audio.js';
 import { buildMaze, countPellets, drawMaze } from './maze.js';
 import { updateHUD, showMessage, hideMessage, addScore, drawScorePopups, drawFlash } from './ui.js';
 import { resetPac, drawPac, updatePac } from './pacman.js';
@@ -55,6 +55,33 @@ function drawIntro() {
   ctx.fillStyle  = '#ffffff44';
   ctx.font       = '11px Courier New';
   ctx.fillText('WASD / ARROW KEYS', W / 2, H / 2 + 160);
+  ctx.textAlign  = 'left';
+  ctx.restore();
+}
+
+// ─── Pause overlay ────────────────────────────────────────────────────────────
+
+function drawPauseOverlay() {
+  ctx.fillStyle = 'rgba(0,0,0,0.58)';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.textAlign = 'center';
+
+  const pulse = 1 + 0.1 * Math.sin(state.animFrame * 0.06);
+  ctx.shadowColor = '#00f5ff';
+  ctx.shadowBlur  = 26 * pulse;
+  ctx.fillStyle   = '#00f5ff';
+  ctx.font        = 'bold 48px Courier New';
+  ctx.fillText('PAUSED', W / 2, H / 2 - 16);
+
+  ctx.shadowColor = '#c77dff';
+  ctx.shadowBlur  = 12;
+  ctx.fillStyle   = '#c77dff';
+  ctx.font        = '14px Courier New';
+  ctx.fillText('PRESS ESC TO RESUME', W / 2, H / 2 + 22);
+
+  ctx.shadowBlur = 0;
   ctx.textAlign  = 'left';
   ctx.restore();
 }
@@ -240,6 +267,17 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'd') { state.pac.nextDir = { x:  1, y:  0 }; handled = true; }
   if (e.key === 'ArrowUp'    || e.key === 'w') { state.pac.nextDir = { x:  0, y: -1 }; handled = true; }
   if (e.key === 'ArrowDown'  || e.key === 's') { state.pac.nextDir = { x:  0, y:  1 }; handled = true; }
+  if (e.key === 'Escape') {
+    if (state.gameState === 'PLAYING') {
+      state.gameState = 'PAUSED';
+      setMusicVolume(0.2);
+      handled = true;
+    } else if (state.gameState === 'PAUSED') {
+      state.gameState = 'PLAYING';
+      setMusicVolume(1.0);
+      handled = true;
+    }
+  }
   if ((e.key === ' ' || e.key === 'Enter')
       && (state.gameState === 'INTRO' || state.gameState === 'GAME_OVER')) {
     playIntroJingle();
@@ -285,6 +323,12 @@ function gameLoop() {
     drawScorePopups();
     drawFlash();
     if (shook) ctx.restore();
+
+  } else if (state.gameState === 'PAUSED') {
+    drawMaze();
+    state.ghosts.forEach(drawGhost);
+    drawPac();
+    drawPauseOverlay();
 
   } else if (state.gameState === 'DEAD') {
     updatePac();
