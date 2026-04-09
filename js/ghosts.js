@@ -21,8 +21,9 @@ export function buildGhosts() {
 // ─── Frightened mode ─────────────────────────────────────────────────────────
 
 export function startFrightened() {
-  state.frightenedTimer = 7 * 60; // 7 seconds at 60 fps
+  state.frightenedTimer = 7 * 60;
   state.ghostEatChain   = 0;
+  state.powerActive     = true;
   state.ghosts.forEach(g => {
     if (g.state === 'CHASE' || g.state === 'SCATTER') {
       g.state = 'FRIGHTENED';
@@ -37,6 +38,7 @@ export function updateFrightened() {
     state.frightenedTimer--;
     if (state.frightenedTimer === 0) {
       state.ghostEatChain = 0;
+      state.powerActive   = false;
       state.ghosts.forEach(g => { if (g.state === 'FRIGHTENED') g.state = 'CHASE'; });
       setMusicIntense(false);
     }
@@ -165,15 +167,15 @@ export function updateGhost(g, index) {
     const prevDirX = g.dir.x, prevDirY = g.dir.y;
 
     if (g.state === 'EATEN') {
-      // Navigate to ghost house centre, then recover for 10 seconds
-      if (cx === 10 && cy === 10) {
+      // Navigate to the proven entrance point above the ghost house
+      if (cx === 10 && cy === 8) {
         g.state         = 'RECOVERING';
-        g.recoveryTimer = 10 * 60; // 10 seconds at 60 fps
+        g.recoveryTimer = 10 * 60;          // 10 seconds
         g.x = 10 * CELL + CELL / 2;
-        g.y = 10 * CELL + CELL / 2;
+        g.y = 10 * CELL + CELL / 2;         // snap into house centre
         return;
       }
-      chooseDirection(g, cx, cy, { c: 10, r: 10 }, null);
+      chooseDirection(g, cx, cy, { c: 10, r: 8 }, null);
     } else if (g.state === 'FRIGHTENED') {
       const rev  = { x: -g.dir.x, y: -g.dir.y };
       const opts = DIRS.filter(d => canGhostMove(cx, cy, d, g.state) && !(d.x === rev.x && d.y === rev.y));

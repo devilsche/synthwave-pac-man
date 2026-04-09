@@ -1,4 +1,4 @@
-import { CELL, W, H, C, ctx } from './constants.js';
+import { CELL, W, H, C, canvas, ctx } from './constants.js';
 import { state } from './state.js';
 import { playIntroJingle, playGhostEaten, playDeath, playLevelComplete, resetAudio, startMusic, stopMusic } from './audio.js';
 import { buildMaze, countPellets, drawMaze } from './maze.js';
@@ -66,6 +66,7 @@ function eatGhost(g) {
   const pts = [200, 400, 800, 1600][Math.min(state.ghostEatChain - 1, 3)];
   addScore(pts, g.x, g.y - 10);
   g.state = 'EATEN';
+  state.shakeTimer = 12; // ~200ms at 60fps
   playGhostEaten();
 }
 
@@ -142,6 +143,9 @@ function startGame() {
   state.modeIndex       = 0;
   state.modeTimer       = 0;
   state.frightenedTimer = 0;
+  state.powerActive     = false;
+  state.shakeTimer      = 0;
+  state.pacTrail        = [];
   resetAudio();
   countPellets();
   resetPac();
@@ -171,6 +175,20 @@ document.addEventListener('keydown', e => {
 
 // ─── Main loop ───────────────────────────────────────────────────────────────
 
+function applyShake() {
+  if (state.shakeTimer > 0) {
+    const mag = state.shakeTimer * 0.5;
+    ctx.save();
+    ctx.translate(
+      (Math.random() - 0.5) * mag,
+      (Math.random() - 0.5) * mag
+    );
+    state.shakeTimer--;
+    return true;
+  }
+  return false;
+}
+
 function gameLoop() {
   state.animFrame++;
 
@@ -184,11 +202,13 @@ function gameLoop() {
     updatePac();
     checkGhostCollisions();
     checkLevelComplete();
+    const shook = applyShake();
     drawMaze();
     state.ghosts.forEach(drawGhost);
     drawPac();
     drawScorePopups();
     drawFlash();
+    if (shook) ctx.restore();
 
   } else if (state.gameState === 'DEAD') {
     updatePac();

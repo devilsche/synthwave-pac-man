@@ -38,9 +38,54 @@ function drawPacDeath() {
   ctx.restore();
 }
 
+function drawPowerTrail() {
+  state.pacTrail.forEach(t => {
+    ctx.save();
+    ctx.globalAlpha = t.alpha * 0.7;
+    ctx.shadowColor = '#00f5ff';
+    ctx.shadowBlur  = 12;
+    ctx.fillStyle   = '#00f5ff';
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, state.pac.radius * 0.55 * t.alpha, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawPowerShine(pac) {
+  const pulse     = 1 + 0.3 * Math.sin(state.animFrame * 0.22);
+  const numRays   = 8;
+  const innerR    = pac.radius * 1.1;
+  const outerR    = pac.radius * (1.9 + 0.4 * pulse);
+  ctx.save();
+  ctx.translate(pac.x, pac.y);
+  ctx.rotate(state.animFrame * 0.04);
+  ctx.shadowColor = '#ffe000';
+  ctx.shadowBlur  = 18;
+  for (let i = 0; i < numRays; i++) {
+    const angle = (i / numRays) * Math.PI * 2;
+    const ax    = Math.cos(angle), ay = Math.sin(angle);
+    const spread = Math.PI / (numRays * 2.5);
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,224,0,0.75)' : 'rgba(0,245,255,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(ax * innerR, ay * innerR);
+    ctx.lineTo(Math.cos(angle - spread) * outerR, Math.sin(angle - spread) * outerR);
+    ctx.lineTo(Math.cos(angle + spread) * outerR, Math.sin(angle + spread) * outerR);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
 export function drawPac() {
   const pac = state.pac;
   if (pac.dead) { drawPacDeath(); return; }
+
+  if (state.powerActive) {
+    drawPowerTrail();
+    drawPowerShine(pac);
+  }
 
   let rot = 0;
   if      (pac.dir.x ===  1) rot = 0;
@@ -51,8 +96,10 @@ export function drawPac() {
   ctx.save();
   ctx.translate(pac.x, pac.y);
   ctx.rotate(rot);
-  ctx.shadowColor = C.pac;
-  ctx.shadowBlur  = 14;
+  // Larger pulsing glow when powered up
+  const glowSize = state.powerActive ? 22 + 8 * Math.sin(state.animFrame * 0.2) : 14;
+  ctx.shadowColor = state.powerActive ? '#00f5ff' : C.pac;
+  ctx.shadowBlur  = glowSize;
   ctx.fillStyle   = C.pac;
   ctx.beginPath();
   ctx.moveTo(0, 0);
@@ -67,6 +114,10 @@ export function drawPac() {
 
 export function updatePac() {
   const pac = state.pac;
+
+  // Fade existing trail entries each frame
+  state.pacTrail = state.pacTrail.filter(t => t.alpha > 0.05);
+  state.pacTrail.forEach(t => t.alpha *= 0.78);
 
   if (pac.dead) {
     pac.deathTimer++;
@@ -117,6 +168,12 @@ export function updatePac() {
   // Tunnel wrap
   if (pac.x < -CELL)    pac.x = W + CELL / 2;
   if (pac.x > W + CELL) pac.x = -CELL / 2;
+
+  // Record neon trail when powered up (every 3 frames to avoid too many points)
+  if (state.powerActive && state.animFrame % 3 === 0) {
+    state.pacTrail.push({ x: pac.x, y: pac.y, alpha: 1 });
+    if (state.pacTrail.length > 14) state.pacTrail.shift();
+  }
 
   // Eat pellets
   const pr  = Math.round((pac.y - CELL / 2) / CELL);

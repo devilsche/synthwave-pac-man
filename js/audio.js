@@ -94,58 +94,118 @@ export function playIntroJingle() {
 }
 
 // ─── 8-bit synthwave background music ────────────────────────────────────────
+// Outrun / 80s pop synthwave — A minor, 132 BPM
+// Four layers: lead melody + fast arpeggio + pumping bass + 4-on-floor drums
 
-// Note frequencies (A minor)
 const N = {
-  D4: 293.7, E4: 329.6, G4: 392.0, A4: 440.0, B4: 493.9,
-  C5: 523.3, D5: 587.3, E5: 659.3, G5: 784.0, A5: 880.0,
-  A2: 110.0, E3: 164.8, C3: 130.8, D3: 146.8, G3: 196.0,
-  _:  0,
+  A2: 110.0, C3: 130.8, D3: 146.8, E3: 164.8, F3: 174.6, G3: 196.0,
+  A3: 220.0, B3: 246.9, C4: 261.6, D4: 293.7, E4: 329.6, F4: 349.2, G4: 392.0,
+  A4: 440.0, B4: 493.9, C5: 523.3, D5: 587.3, E5: 659.3, F5: 698.5, G5: 784.0, A5: 880.0,
+  _: 0,
 };
 
-// Normal gameplay: A minor, 120 BPM, gentle arpeggio
-//   Each entry: [freq, duration_in_beats]  (0 = rest)
+// ─── Normal (gameplay) ────────────────────────────────────────────────────────
+
+// 8-bar catchy hook — punchy ascending runs with 80s pop phrasing
 const MELODY_NORMAL = [
-  [N.A4, 1], [N._, 0.5], [N.C5, 0.5], [N.E5, 1], [N.C5, 0.5], [N.A4, 0.5], // bar 1
-  [N.G4, 1], [N._, 0.5], [N.A4, 0.5], [N.B4, 1], [N.A4,  1  ], // bar 2
-  [N.D5, 1.5],            [N.C5, 0.5], [N.A4, 1], [N.G4,  1  ], // bar 3
-  [N.A4, 2], [N._, 2], // bar 4
-];
-const BASS_NORMAL = [
-  [N.A2, 2], [N.E3, 2],
-  [N.A2, 1.5], [N.C3, 0.5], [N.E3, 2],
-  [N.D3, 2], [N.A2, 2],
-  [N.E3, 2], [N.A2, 2],
+  // Bar 1: Opening hook — spring up to A4
+  [N.E4, 0.5],[N.E4, 0.25],[N.G4, 0.25],[N.A4, 0.5],[N.G4, 0.5],
+  // Bar 2: Answer — fall back with drive
+  [N.E4, 0.5],[N.D4, 0.5],[N.C4, 0.5],[N.E4, 0.5],
+  // Bar 3: Rise — peak at B4
+  [N.A4, 0.5],[N.A4, 0.25],[N.B4, 0.25],[N.A4, 0.5],[N.G4, 0.5],
+  // Bar 4: Settle — F4→G4 colour
+  [N.E4, 0.5],[N.F4, 0.5],[N.G4, 0.5],[N.E4, 0.5],
+  // Bar 5: Build — climb to C5
+  [N.C5, 0.5],[N.B4, 0.5],[N.A4, 0.5],[N.G4, 0.5],
+  // Bar 6: Drive — ascending scale run
+  [N.E4, 0.5],[N.G4, 0.5],[N.A4, 0.5],[N.B4, 0.5],
+  // Bar 7: Peak — hit E5
+  [N.C5, 0.5],[N.D5, 0.5],[N.E5, 0.5],[N.D5, 0.5],
+  // Bar 8: Resolution — sweep back home
+  [N.C5, 0.5],[N.A4, 0.5],[N.G4, 0.25],[N.E4, 0.25],[N.A3, 1.0],
 ];
 
-// Intense mode (power pill): faster, higher octave runs, 155 BPM
-const MELODY_INTENSE = [
-  [N.A4,0.5],[N.C5,0.5],[N.E5,0.5],[N.A5,0.5], [N.G5,0.5],[N.E5,0.5],[N.C5,0.5],[N.G4,0.5], // bar 1
-  [N.A4,0.5],[N.E5,0.5],[N.A5,0.5],[N.E5,0.5], [N.D5,0.5],[N.E5,0.5],[N.C5,0.5],[N.A4,0.5], // bar 2
-  [N.D5,0.5],[N.E5,0.5],[N.A5,0.5],[N.G5,0.5], [N.E5,0.5],[N.D5,0.5],[N.C5,0.5],[N.B4,0.5], // bar 3
-  [N.C5,0.5],[N.E5,0.5],[N.G5,0.5],[N.E5,0.5], [N.C5,0.5],[N.A4,0.5],[N.G4,0.5],[N.A4,0.5], // bar 4
+// Fast 16th-note arpeggio — Am→F→Am→G, the synthwave heartbeat
+const ARPEGGIO_NORMAL = [
+  [N.A3,0.25],[N.C4,0.25],[N.E4,0.25],[N.A4,0.25],
+  [N.A3,0.25],[N.C4,0.25],[N.E4,0.25],[N.A4,0.25],
+  [N.F3,0.25],[N.A3,0.25],[N.C4,0.25],[N.F4,0.25],
+  [N.F3,0.25],[N.A3,0.25],[N.C4,0.25],[N.F4,0.25],
+  [N.A3,0.25],[N.C4,0.25],[N.E4,0.25],[N.A4,0.25],
+  [N.A3,0.25],[N.C4,0.25],[N.E4,0.25],[N.A4,0.25],
+  [N.G3,0.25],[N.B3,0.25],[N.D4,0.25],[N.G4,0.25],
+  [N.G3,0.25],[N.B3,0.25],[N.D4,0.25],[N.G4,0.25],
 ];
+
+// Pumping 8th-note sawtooth bass — walks through Am→F→C→G
+const BASS_NORMAL = [
+  [N.A2,0.5],[N.A2,0.5],[N.A2,0.5],[N.A2,0.5],
+  [N.A2,0.5],[N.A2,0.5],[N.A2,0.5],[N.E3,0.5],
+  [N.F3,0.5],[N.F3,0.5],[N.F3,0.5],[N.F3,0.5],
+  [N.C3,0.5],[N.C3,0.5],[N.G3,0.5],[N.G3,0.5],
+  [N.A2,0.5],[N.A2,0.5],[N.C3,0.5],[N.C3,0.5],
+  [N.F3,0.5],[N.F3,0.5],[N.G3,0.5],[N.G3,0.5],
+  [N.A2,0.5],[N.E3,0.5],[N.A2,0.5],[N.E3,0.5],
+  [N.G3,0.5],[N.G3,0.5],[N.A2,0.5],[N.A2,0.5],
+];
+
+// ─── Intense (power pill) ─────────────────────────────────────────────────────
+
+// Upper-octave screaming lead, 150 BPM
+const MELODY_INTENSE = [
+  [N.E5,0.25],[N.G5,0.25],[N.A5,0.25],[N.G5,0.25],
+  [N.E5,0.25],[N.D5,0.25],[N.C5,0.25],[N.E5,0.25],
+  [N.A4,0.25],[N.B4,0.25],[N.C5,0.25],[N.B4,0.25],
+  [N.A4,0.25],[N.G4,0.25],[N.A4,0.25],[N.E4,0.25],
+  [N.C5,0.25],[N.B4,0.25],[N.A4,0.25],[N.B4,0.25],
+  [N.C5,0.25],[N.D5,0.25],[N.E5,0.25],[N.G5,0.25],
+  [N.A5,0.25],[N.G5,0.25],[N.E5,0.25],[N.D5,0.25],
+  [N.E5,0.25],[N.C5,0.25],[N.A4,0.25],[N.E4,0.25],
+];
+
+// Arpeggio one octave higher — frenetic 16th notes
+const ARPEGGIO_INTENSE = [
+  [N.A4,0.25],[N.C5,0.25],[N.E5,0.25],[N.A5,0.25],
+  [N.A4,0.25],[N.C5,0.25],[N.E5,0.25],[N.A5,0.25],
+  [N.F4,0.25],[N.A4,0.25],[N.C5,0.25],[N.F5,0.25],
+  [N.F4,0.25],[N.A4,0.25],[N.C5,0.25],[N.F5,0.25],
+  [N.A4,0.25],[N.C5,0.25],[N.E5,0.25],[N.A5,0.25],
+  [N.A4,0.25],[N.C5,0.25],[N.E5,0.25],[N.A5,0.25],
+  [N.G4,0.25],[N.B4,0.25],[N.D5,0.25],[N.G5,0.25],
+  [N.G4,0.25],[N.B4,0.25],[N.D5,0.25],[N.G5,0.25],
+];
+
+// Same bass pattern compressed to quarter notes at double speed
 const BASS_INTENSE = [
-  [N.A2,1],[N.A2,1],[N.E3,1],[N.E3,1],
-  [N.A2,1],[N.C3,1],[N.D3,1],[N.E3,1],
-  [N.D3,1],[N.D3,1],[N.A2,1],[N.A2,1],
-  [N.E3,1],[N.G3,1],[N.A2,1],[N.A2,1],
+  [N.A2,0.25],[N.A2,0.25],[N.A2,0.25],[N.A2,0.25],
+  [N.A2,0.25],[N.A2,0.25],[N.A2,0.25],[N.E3,0.25],
+  [N.F3,0.25],[N.F3,0.25],[N.F3,0.25],[N.F3,0.25],
+  [N.C3,0.25],[N.C3,0.25],[N.G3,0.25],[N.G3,0.25],
+  [N.A2,0.25],[N.A2,0.25],[N.C3,0.25],[N.C3,0.25],
+  [N.F3,0.25],[N.F3,0.25],[N.G3,0.25],[N.G3,0.25],
+  [N.A2,0.25],[N.E3,0.25],[N.A2,0.25],[N.E3,0.25],
+  [N.G3,0.25],[N.G3,0.25],[N.A2,0.25],[N.A2,0.25],
 ];
 
 // ─── Scheduler state ─────────────────────────────────────────────────────────
-let musicPlaying    = false;
-let musicMode       = 'normal';
-let musicInterval   = null;
-let melodyIndex     = 0;
-let bassIndex       = 0;
-let nextMelodyTime  = 0;
-let nextBassTime    = 0;
-let nextDrumTime    = 0;
+let musicPlaying   = false;
+let musicMode      = 'normal';
+let musicInterval  = null;
+let melodyIndex    = 0;
+let arpIndex       = 0;
+let bassIndex      = 0;
+let drumBeatCount  = 0;
+let nextMelodyTime = 0;
+let nextArpTime    = 0;
+let nextBassTime   = 0;
+let nextDrumTime   = 0;
 
-function getMelody() { return musicMode === 'intense' ? MELODY_INTENSE : MELODY_NORMAL; }
-function getBass()   { return musicMode === 'intense' ? BASS_INTENSE   : BASS_NORMAL; }
-function getBPM()    { return musicMode === 'intense' ? 155 : 120; }
-function getBeat()   { return 60 / getBPM(); }
+function getMelody()   { return musicMode === 'intense' ? MELODY_INTENSE   : MELODY_NORMAL;   }
+function getArpeggio() { return musicMode === 'intense' ? ARPEGGIO_INTENSE : ARPEGGIO_NORMAL; }
+function getBass()     { return musicMode === 'intense' ? BASS_INTENSE     : BASS_NORMAL;     }
+function getBPM()      { return musicMode === 'intense' ? 150 : 132; }
+function getBeat()     { return 60 / getBPM(); }
 
 function schedOsc(freq, type, time, dur, vol) {
   if (!freq) return;
@@ -161,53 +221,65 @@ function schedOsc(freq, type, time, dur, vol) {
 }
 
 function schedKick(time) {
-  // Punchy pitch-drop kick
   schedOsc(160, 'sine', time, 0.12, 0.4);
   playTone(160, 'sine', 0.12, 0.4, time, 38);
 }
 
+// 8-bit snare: two-oscillator square burst
+function schedSnare(time) {
+  schedOsc(220, 'square', time, 0.06, 0.12);
+  schedOsc(175, 'square', time, 0.05, 0.08);
+}
+
 function schedHihat(time) {
-  schedOsc(1400, 'square', time, 0.025, 0.035);
+  schedOsc(1400, 'square', time, 0.022, 0.03);
 }
 
 function runScheduler() {
   if (!musicPlaying) return;
   const ac    = getAudio();
   const now   = ac.currentTime;
-  const AHEAD = 0.12;
+  const AHEAD = 0.18; // slightly wider window for fast 16th-note arpeggios
   const beat  = getBeat();
   const mel   = getMelody();
+  const arp   = getArpeggio();
   const bas   = getBass();
 
-  // Melody (square wave lead)
+  // Lead melody (square wave)
   while (nextMelodyTime < now + AHEAD) {
     const note = mel[melodyIndex % mel.length];
-    schedOsc(note[0], 'square', nextMelodyTime, note[1] * beat * 0.82, 0.09);
+    if (note[0]) schedOsc(note[0], 'square', nextMelodyTime, note[1] * beat * 0.82, 0.09);
     nextMelodyTime += note[1] * beat;
-    melodyIndex++;
-    if (melodyIndex >= mel.length) melodyIndex = 0;
+    melodyIndex = (melodyIndex + 1) % mel.length;
+  }
+
+  // Arpeggio (triangle — sits behind the lead)
+  while (nextArpTime < now + AHEAD) {
+    const note = arp[arpIndex % arp.length];
+    if (note[0]) schedOsc(note[0], 'triangle', nextArpTime, note[1] * beat * 0.7, 0.055);
+    nextArpTime += note[1] * beat;
+    arpIndex = (arpIndex + 1) % arp.length;
   }
 
   // Bass (sawtooth)
   while (nextBassTime < now + AHEAD) {
     const note = bas[bassIndex % bas.length];
-    schedOsc(note[0], 'sawtooth', nextBassTime, note[1] * beat * 0.75, 0.14);
+    if (note[0]) schedOsc(note[0], 'sawtooth', nextBassTime, note[1] * beat * 0.75, 0.14);
     nextBassTime += note[1] * beat;
-    bassIndex++;
-    if (bassIndex >= bas.length) bassIndex = 0;
+    bassIndex = (bassIndex + 1) % bas.length;
   }
 
-  // Drums: kick on 1&3, hihat on every beat; intense = kick every beat + faster hihat
+  // Drums: 4-on-the-floor kick, snare on beats 2 & 4, 8th-note hihats
   while (nextDrumTime < now + AHEAD) {
     schedKick(nextDrumTime);
+    if (drumBeatCount % 2 === 1) schedSnare(nextDrumTime); // beats 2 & 4
+    schedHihat(nextDrumTime + beat * 0.5);
     if (musicMode === 'intense') {
-      schedHihat(nextDrumTime + beat * 0.5);
-      schedHihat(nextDrumTime + beat);
-      nextDrumTime += beat;
-    } else {
-      schedHihat(nextDrumTime + beat);
-      nextDrumTime += beat * 2;
+      schedHihat(nextDrumTime + beat * 0.25);
+      schedHihat(nextDrumTime + beat * 0.75);
     }
+    nextDrumTime += beat;
+    drumBeatCount++;
   }
 }
 
@@ -216,9 +288,12 @@ export function startMusic() {
   musicPlaying   = true;
   musicMode      = 'normal';
   melodyIndex    = 0;
+  arpIndex       = 0;
   bassIndex      = 0;
+  drumBeatCount  = 0;
   const ac       = getAudio();
   nextMelodyTime = ac.currentTime;
+  nextArpTime    = ac.currentTime;
   nextBassTime   = ac.currentTime;
   nextDrumTime   = ac.currentTime;
   musicInterval  = setInterval(runScheduler, 25);
@@ -233,9 +308,10 @@ export function stopMusic() {
 export function setMusicIntense(intense) {
   const next = intense ? 'intense' : 'normal';
   if (musicMode === next) return;
-  musicMode   = next;
-  // Reset pattern positions so new loop starts cleanly
-  melodyIndex = 0;
-  bassIndex   = 0;
+  musicMode     = next;
+  melodyIndex   = 0;
+  arpIndex      = 0;
+  bassIndex     = 0;
+  drumBeatCount = 0;
 }
 

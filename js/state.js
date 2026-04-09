@@ -19,7 +19,10 @@ export const state = {
   flashTimer:      0,
   scorePopups:     [], // [{ x, y, text, alpha, vy }]
 
-  // Ghost mode cycling
+  // Power pill state
+  powerActive:     false,
+  shakeTimer:      0,
+  pacTrail:        [],
   modeIndex:       0,
   modeTimer:       0,
 
