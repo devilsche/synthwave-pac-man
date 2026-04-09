@@ -305,6 +305,46 @@ export function stopMusic() {
   musicInterval = null;
 }
 
+// ─── Victory dance (level complete) ──────────────────────────────────────────
+// Upbeat C-major fanfare, 140 BPM, ~3.5 s — plays once when the level ends.
+export function playVictoryDance() {
+  const ac = getAudio();
+  const t  = ac.currentTime;
+  const b  = 60 / 140; // beat duration in seconds
+
+  // Lead melody: ascending fanfare then happy dance hook (~6 beats)
+  const lead = [
+    [523, 0.25], [659, 0.25], [784, 0.25], [1047, 0.5],  // C5-E5-G5-C6 fanfare
+    [880, 0.25], [784, 0.25], [659, 0.25], [784, 0.25],  // A5-G5-E5-G5 hook
+    [880, 0.5],
+    [659, 0.25], [784, 0.25], [880, 0.25], [1047, 0.25], // sweep up
+    [1047, 0.5], [880, 0.25], [784, 0.25],               // peak
+    [659, 0.25], [523, 1.0],                              // resolution
+  ];
+  let time = t;
+  lead.forEach(([freq, dur]) => {
+    playTone(freq, 'square', dur * b * 0.82, 0.1, time);
+    time += dur * b;
+  });
+
+  // Fast arpeggio: 32 sixteenth-notes over 8 beats
+  const arpNotes = [523, 659, 784, 659]; // C5-E5-G5-E5
+  for (let i = 0; i < 32; i++) {
+    playTone(arpNotes[i % 4], 'triangle', b * 0.22, 0.045, t + i * b * 0.25);
+  }
+
+  // Bass walk (C-major)
+  [262, 262, 330, 349, 392, 392, 330, 262].forEach((freq, i) => {
+    playTone(freq, 'sawtooth', b * 0.75, 0.12, t + i * b);
+  });
+
+  // Drums: kick every beat, snare on 2 & 4
+  for (let i = 0; i < 8; i++) {
+    playTone(160, 'sine', 0.12, 0.35, t + i * b, 38);
+    if (i % 2 === 1) playTone(220, 'square', 0.06, 0.1, t + i * b);
+  }
+}
+
 export function setMusicIntense(intense) {
   const next = intense ? 'intense' : 'normal';
   if (musicMode === next) return;

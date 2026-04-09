@@ -1,6 +1,6 @@
 import { CELL, W, H, C, canvas, ctx } from './constants.js';
 import { state } from './state.js';
-import { playIntroJingle, playGhostEaten, playDeath, playLevelComplete, resetAudio, startMusic, stopMusic } from './audio.js';
+import { playIntroJingle, playGhostEaten, playDeath, playVictoryDance, resetAudio, startMusic, stopMusic } from './audio.js';
 import { buildMaze, countPellets, drawMaze } from './maze.js';
 import { updateHUD, showMessage, hideMessage, addScore, drawScorePopups, drawFlash } from './ui.js';
 import { resetPac, drawPac, updatePac } from './pacman.js';
@@ -59,6 +59,81 @@ function drawIntro() {
   ctx.restore();
 }
 
+// ─── Win screen ───────────────────────────────────────────────────────────────
+
+function drawWin() {
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.textAlign = 'center';
+
+  // "YOU WIN!" with pulsing golden glow
+  const pulse = 1 + 0.12 * Math.sin(state.animFrame * 0.07);
+  ctx.shadowColor = '#ffe000';
+  ctx.shadowBlur  = 28 * pulse;
+  ctx.fillStyle   = '#ffe000';
+  ctx.font        = 'bold 52px Courier New';
+  ctx.fillText('YOU WIN!', W / 2, H / 2 - 100);
+
+  // Big Pac-Man (chomping + bobbing)
+  const bigR       = 65;
+  const mouthAngle = 0.15 + 0.25 * Math.abs(Math.sin(state.animFrame * 0.15));
+  const pacBob     = Math.sin(state.animFrame * 0.08) * 8;
+  const pcx        = W / 2;
+  const pcy        = H / 2 - 10 + pacBob;
+
+  ctx.shadowColor = C.pac;
+  ctx.shadowBlur  = 30;
+  ctx.fillStyle   = C.pac;
+  ctx.beginPath();
+  ctx.moveTo(pcx, pcy);
+  ctx.arc(pcx, pcy, bigR, mouthAngle * Math.PI, (2 - mouthAngle) * Math.PI);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eye
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = C.bg;
+  ctx.beginPath();
+  ctx.arc(pcx + bigR * 0.18, pcy - bigR * 0.55, bigR * 0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Orbiting sparkles
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2 + state.animFrame * 0.04;
+    const dist  = bigR + 22 + Math.sin(state.animFrame * 0.07 + i) * 8;
+    ctx.fillStyle   = i % 2 === 0 ? '#ff2d78' : '#c77dff';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur  = 8;
+    const size = 3 + Math.sin(state.animFrame * 0.12 + i * 0.8) * 2;
+    ctx.beginPath();
+    ctx.arc(pcx + Math.cos(angle) * dist, pcy + Math.sin(angle) * dist, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  // Level / score
+  ctx.fillStyle   = '#c77dff';
+  ctx.shadowColor = '#c77dff';
+  ctx.shadowBlur  = 12;
+  ctx.font        = '16px Courier New';
+  ctx.fillText(`LEVEL ${state.level} COMPLETE`, W / 2, H / 2 + 90);
+  ctx.fillText(`SCORE: ${state.score}`, W / 2, H / 2 + 114);
+
+  // Blinking prompt
+  if (Math.floor(state.animFrame / 25) % 2 === 0) {
+    ctx.fillStyle  = '#ffffff55';
+    ctx.shadowBlur = 0;
+    ctx.font       = '12px Courier New';
+    ctx.fillText('NEXT LEVEL LOADING…', W / 2, H / 2 + 150);
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.textAlign  = 'left';
+  ctx.restore();
+}
+
 // ─── Collisions ──────────────────────────────────────────────────────────────
 
 function eatGhost(g) {
@@ -105,20 +180,21 @@ function checkGhostCollisions() {
 
 function checkLevelComplete() {
   if (state.pelletCount <= 0 && state.gameState === 'PLAYING') {
-    state.gameState  = 'LEVEL_COMPLETE';
-    state.flashTimer = 90;
-    playLevelComplete();
+    state.gameState = 'LEVEL_COMPLETE';
+    stopMusic();
+    playVictoryDance();
     setTimeout(() => {
       state.level++;
-      state.maze = buildMaze();
+      state.maze    = buildMaze();
       countPellets();
       resetPac();
       buildGhosts();
       state.modeIndex = 0;
       state.modeTimer = 0;
+      state.pacTrail  = [];
       state.gameState = 'PLAYING';
-      hideMessage();
-    }, 2000);
+      startMusic();
+    }, 4000);
   }
 }
 
@@ -217,10 +293,7 @@ function gameLoop() {
     drawPac();
 
   } else if (state.gameState === 'LEVEL_COMPLETE') {
-    drawMaze();
-    state.ghosts.forEach(drawGhost);
-    drawPac();
-    drawFlash();
+    drawWin();
 
   } else if (state.gameState === 'GAME_OVER') {
     drawMaze();

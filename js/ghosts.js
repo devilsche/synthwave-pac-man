@@ -160,6 +160,21 @@ export function updateGhost(g, index) {
   const speed   = getGhostSpeed(g);
   const cx      = Math.round((g.x - CELL / 2) / CELL);
   const cy      = Math.round((g.y - CELL / 2) / CELL);
+
+  // Robust house-arrival check — fires every frame so high-speed ghosts
+  // can't overshoot the cell-alignment window and stay stuck as EATEN.
+  if (g.state === 'EATEN') {
+    const houseX = 10 * CELL + CELL / 2; // pixel centre of col 10
+    const gateY  = 8  * CELL + CELL / 2; // pixel centre of row 8 (entrance)
+    if (Math.abs(g.x - houseX) < CELL && g.y >= gateY - speed) {
+      g.state         = 'RECOVERING';
+      g.recoveryTimer = 10 * 60;
+      g.x             = houseX;
+      g.y             = 10 * CELL + CELL / 2; // snap to house centre
+      return;
+    }
+  }
+
   const aligned = Math.abs(g.x - (cx * CELL + CELL / 2)) < speed + 1
                && Math.abs(g.y - (cy * CELL + CELL / 2)) < speed + 1;
 
@@ -167,14 +182,6 @@ export function updateGhost(g, index) {
     const prevDirX = g.dir.x, prevDirY = g.dir.y;
 
     if (g.state === 'EATEN') {
-      // Navigate to the proven entrance point above the ghost house
-      if (cx === 10 && cy === 8) {
-        g.state         = 'RECOVERING';
-        g.recoveryTimer = 10 * 60;          // 10 seconds
-        g.x = 10 * CELL + CELL / 2;
-        g.y = 10 * CELL + CELL / 2;         // snap into house centre
-        return;
-      }
       chooseDirection(g, cx, cy, { c: 10, r: 8 }, null);
     } else if (g.state === 'FRIGHTENED') {
       const rev  = { x: -g.dir.x, y: -g.dir.y };
