@@ -1,0 +1,24 @@
+{
+  "name": "synthwave-pac-man",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild js/game.js --bundle --outfile=js/bundle.js --format=iife",
+    "watch": "esbuild js/game.js --bundle --outfile=js/bundle.js --format=iife --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devilsche/synthwave-pac-man.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devilsche/synthwave-pac-man/issues"
+  },
+  "homepage": "https://github.com/devilsche/synthwave-pac-man#readme",
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
